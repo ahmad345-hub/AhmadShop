@@ -1,7 +1,9 @@
 ﻿using AhmadShop.DAL.Data;
 using AhmadShop.DAL.Model;
+using AhmadShop.DAL.Repositires;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace AhmadShop.PL.Controllers
 {
@@ -9,12 +11,12 @@ namespace AhmadShop.PL.Controllers
     [ApiController]
     public class CategoriesController : ControllerBase
     {
-        ApplicationDpContext context = new ApplicationDpContext();
+        CategoryRepository<Category> repo = new CategoryRepository<Category>();
 
         [HttpGet("")]
         public IActionResult Index()
         {
-            var Categories = context.Categories.ToList();
+            var Categories = repo.Get();
             return Ok(Categories);
         }
 
@@ -22,7 +24,7 @@ namespace AhmadShop.PL.Controllers
         [HttpGet("{id}")]
         public IActionResult GetBYId(int id)
         {
-            var Category = context.Categories.Find(id);
+            var Category = repo.Find(id);
             return Ok(Category);
         }
 
@@ -30,11 +32,28 @@ namespace AhmadShop.PL.Controllers
         [HttpPost("")]
         public IActionResult Create(Category Category)
         {
-            context.Categories.Add(Category);
-            context.SaveChanges();
+            repo.Create(Category);
+
             return Ok();
         }
 
 
+        [HttpPut("")]
+        public IActionResult Update(Category Category)
+        {
+            repo.Update(Category);
+
+            return Ok();
+        }
+
+
+        [HttpDelete("{id}")]
+        public IActionResult Delete(int id)
+        {
+            var Category = repo.Find(id);
+            repo.Remove(Category);
+
+            return Ok();
+        }
     }
 }
