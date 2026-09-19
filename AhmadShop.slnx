@@ -1,3 +1,5 @@
 <Solution>
+  <Project Path="AhmadShop.BLL/AhmadShop.BLL.csproj" />
+  <Project Path="AhmadShop.DAL/AhmadShop.DAL.csproj" />
   <Project Path="AhmadShop.PL/AhmadShop.PL.csproj" />
 </Solution>
