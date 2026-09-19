@@ -13,8 +13,16 @@ namespace AhmadShop.DAL.Repositires
 
         public void Create(T entity)
         {
-            context.Set<T>().Add(entity);
-            context.SaveChanges();
+            try
+            {
+                context.Set<T>().Add(entity);
+                context.SaveChanges();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.InnerException?.Message);
+                throw;
+            }
         }
 
         public void Update(T entity)
