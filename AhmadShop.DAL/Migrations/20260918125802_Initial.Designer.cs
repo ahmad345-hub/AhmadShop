@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace AhmadShop.DAL.Migrations
 {
-    [DbContext(typeof(ApplicationDpContext))]
+    [DbContext(typeof(ApplicationDbContext))]
     [Migration("20260918125802_Initial")]
     partial class Initial
     {

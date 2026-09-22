@@ -7,16 +7,21 @@ using System.Text;
 
 namespace AhmadShop.DAL.Repositires
 {
-    public class CategoryRepository<T> where T : class
+    public class GenericRepository<T> : IGenericRepositry<T> where T : class
     {
-        ApplicationDpContext context = new ApplicationDpContext();
+        private readonly ApplicationDbContext _context;
+
+        public GenericRepository (ApplicationDbContext context)
+        {
+            _context = context;
+        }
 
         public void Create(T entity)
         {
             try
             {
-                context.Set<T>().Add(entity);
-                context.SaveChanges();
+                _context.Set<T>().Add(entity);
+                _context.SaveChanges();
             }
             catch (Exception ex)
             {
@@ -27,25 +32,25 @@ namespace AhmadShop.DAL.Repositires
 
         public void Update(T entity)
         {
-            context.Set<T>().Update(entity);
-            context.SaveChanges();
+            _context.Set<T>().Update(entity);
+            _context.SaveChanges();
         }
 
         public void Remove(T entity)
         {
-            context.Set<T>().Remove(entity);
-            context.SaveChanges();
+            _context.Set<T>().Remove(entity);
+            _context.SaveChanges();
         }
 
         public List<T> Get()
         {
-            var entities = context.Set<T>().ToList();
+            var entities = _context.Set<T>().ToList();
             return entities;
         }
 
         public T Find(int id)
         {
-            return context.Set<T>().Find(id);
+            return _context.Set<T>().Find(id);
         }
     }
 }

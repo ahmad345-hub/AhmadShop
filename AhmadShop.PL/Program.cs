@@ -1,4 +1,9 @@
 
+using AhmadShop.DAL.Data;
+using AhmadShop.DAL.Model;
+using AhmadShop.DAL.Repositires;
+using Microsoft.EntityFrameworkCore;
+
 namespace AhmadShop.PL
 {
     public class Program
@@ -12,6 +17,9 @@ namespace AhmadShop.PL
             builder.Services.AddControllers();
             // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
             builder.Services.AddOpenApi();
+
+            builder.Services.AddScoped<IGenericRepositry<Category>, GenericRepository<Category>>();
+            builder.Services.AddDbContext<ApplicationDbContext>(options =>options.UseSqlServer("Data Source=.;Database=AhmadShop;Integrated Security=True;TrustServerCertificate=True;"));
 
             var app = builder.Build();
 

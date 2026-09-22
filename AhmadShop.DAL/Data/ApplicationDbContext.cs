@@ -9,18 +9,15 @@ using static System.Net.Mime.MediaTypeNames;
 
 namespace AhmadShop.DAL.Data
 {
-    public class ApplicationDpContext : DbContext
+    public class ApplicationDbContext : DbContext
     {
         public DbSet<Category>Categories { get; set; }
         public DbSet<Brand>Brands { get; set; }
 
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
+        : base(options)
         {
-            base.OnConfiguring(optionsBuilder);
-
-            optionsBuilder.UseSqlServer(
-                "Data Source=.;Database=AhmadShop;Integrated Security=True;TrustServerCertificate=True;"
-            );
         }
+        
     }
 }

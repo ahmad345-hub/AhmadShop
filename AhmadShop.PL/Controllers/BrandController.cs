@@ -10,12 +10,16 @@ namespace AhmadShop.PL.Controllers
     [ApiController]
     public class BrandController : ControllerBase
     {
-        CategoryRepository<Brand> repo = new CategoryRepository<Brand>();
+        private readonly IGenericRepositry<Brand> _repositry;
+        public BrandController(IGenericRepositry<Brand> repositry)
+        {
+            _repositry = repositry;
+        }
 
         [HttpGet("")]
         public IActionResult Index()
         {
-            var Brands = repo.Get();
+            var Brands = _repositry.Get();
             return Ok(Brands);
         }
 
@@ -23,7 +27,7 @@ namespace AhmadShop.PL.Controllers
         [HttpGet("{id}")]
         public IActionResult GetBYId(int id)
         {
-            var Brand = repo.Find(id);
+            var Brand = _repositry.Find(id);
             return Ok(Brand);
         }
 
@@ -31,7 +35,7 @@ namespace AhmadShop.PL.Controllers
         [HttpPost("")]
         public IActionResult Create(Brand Brand)
         {
-            repo.Create(Brand);
+            _repositry.Create(Brand);
 
             return Ok();
         }

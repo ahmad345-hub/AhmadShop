@@ -11,12 +11,16 @@ namespace AhmadShop.PL.Controllers
     [ApiController]
     public class CategoriesController : ControllerBase
     {
-        CategoryRepository<Category> repo = new CategoryRepository<Category>();
+        private readonly IGenericRepositry<Category> _repositry;
+        public CategoriesController(IGenericRepositry<Category> repositry)
+        {
+            _repositry=repositry;
+        }
 
         [HttpGet("")]
         public IActionResult Index()
         {
-            var Categories = repo.Get();
+            var Categories = _repositry.Get();
             return Ok(Categories);
         }
 
@@ -24,7 +28,7 @@ namespace AhmadShop.PL.Controllers
         [HttpGet("{id}")]
         public IActionResult GetBYId(int id)
         {
-            var Category = repo.Find(id);
+            var Category = _repositry.Find(id);
             return Ok(Category);
         }
 
@@ -32,7 +36,7 @@ namespace AhmadShop.PL.Controllers
         [HttpPost("")]
         public IActionResult Create(Category Category)
         {
-            repo.Create(Category);
+            _repositry.Create(Category);
 
             return Ok();
         }
@@ -41,7 +45,7 @@ namespace AhmadShop.PL.Controllers
         [HttpPut("")]
         public IActionResult Update(Category Category)
         {
-            repo.Update(Category);
+            _repositry.Update(Category);
 
             return Ok();
         }
@@ -50,8 +54,8 @@ namespace AhmadShop.PL.Controllers
         [HttpDelete("{id}")]
         public IActionResult Delete(int id)
         {
-            var Category = repo.Find(id);
-            repo.Remove(Category);
+            var Category = _repositry.Find(id);
+            _repositry.Remove(Category);
 
             return Ok();
         }

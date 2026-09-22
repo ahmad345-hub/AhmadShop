@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace AhmadShop.DAL.Migrations
 {
-    [DbContext(typeof(ApplicationDpContext))]
+    [DbContext(typeof(ApplicationDbContext))]
     partial class ApplicationDpContextModelSnapshot : ModelSnapshot
     {
         protected override void BuildModel(ModelBuilder modelBuilder)
