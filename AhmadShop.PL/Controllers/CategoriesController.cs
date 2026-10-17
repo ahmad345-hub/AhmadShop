@@ -1,9 +1,7 @@
-﻿using AhmadShop.DAL.Data;
-using AhmadShop.DAL.Model;
-using AhmadShop.DAL.Repositires;
-using Microsoft.AspNetCore.Http;
+﻿
+using AhmadShop.BLL;
+using AhmadShop.DAL.DTO.Requests;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace AhmadShop.PL.Controllers
 {
@@ -11,53 +9,102 @@ namespace AhmadShop.PL.Controllers
     [ApiController]
     public class CategoriesController : ControllerBase
     {
-        private readonly IGenericRepositry<Category> _repositry;
-        public CategoriesController(IGenericRepositry<Category> repositry)
+        private readonly ICategoryService _service;
+
+        public CategoriesController(ICategoryService service)
         {
-            _repositry=repositry;
+            _service = service;
         }
 
-        [HttpGet("")]
-        public IActionResult Index()
+        // GET: api/Categories
+        [HttpGet]
+        public async Task<IActionResult> GetAll(
+            CancellationToken cancellationToken)
         {
-            var Categories = _repositry.Get();
-            return Ok(Categories);
+            var categories =
+                await _service.GetAllAsync(cancellationToken);
+
+            return Ok(categories);
         }
 
-
+        // GET: api/Categories/5
         [HttpGet("{id}")]
-        public IActionResult GetBYId(int id)
+        public async Task<IActionResult> GetById(
+            int id,
+            CancellationToken cancellationToken)
         {
-            var Category = _repositry.Find(id);
-            return Ok(Category);
+            var category =
+                await _service.GetByIdAsync(id, cancellationToken);
+
+            if (category == null)
+                return NotFound(new { message = "Category not found." });
+
+            return Ok(category);
         }
 
-
-        [HttpPost("")]
-        public IActionResult Create(Category Category)
+        // POST: api/Categories
+        [HttpPost]
+        public async Task<IActionResult> Create(
+            [FromBody] CategoryRequest request,
+            CancellationToken cancellationToken)
         {
-            _repositry.Create(Category);
+            var result =
+                await _service.CreateAsync(request, cancellationToken);
 
-            return Ok();
+            if (!result)
+            {
+                return Conflict(new
+                {
+                    message = "A category with this name already exists."
+                });
+            }
+
+            return Ok(new
+            {
+                message = "Category created successfully."
+            });
         }
 
-
-        [HttpPut("")]
-        public IActionResult Update(Category Category)
+        // PUT: api/Categories/5
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update(
+            int id,
+            [FromBody] CategoryRequest request,
+            CancellationToken cancellationToken)
         {
-            _repositry.Update(Category);
+            var result =
+                await _service.UpdateAsync(id, request, cancellationToken);
 
-            return Ok();
+            if (!result)
+            {
+                return NotFound(new
+                {
+                    message = "Category not found or name already exists."
+                });
+            }
+
+            return Ok(new
+            {
+                message = "Category updated successfully."
+            });
         }
 
-
+        // DELETE: api/Categories/5
         [HttpDelete("{id}")]
-        public IActionResult Delete(int id)
+        public async Task<IActionResult> Delete(
+            int id,
+            CancellationToken cancellationToken)
         {
-            var Category = _repositry.Find(id);
-            _repositry.Remove(Category);
+            var result =
+                await _service.DeleteAsync(id, cancellationToken);
 
-            return Ok();
+            if (!result)
+                return NotFound(new { message = "Category not found." });
+
+            return Ok(new
+            {
+                message = "Category deleted successfully."
+            });
         }
     }
 }

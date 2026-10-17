@@ -1,56 +1,56 @@
-﻿using AhmadShop.DAL.Data;
-using AhmadShop.DAL.Model;
+﻿
+using AhmadShop.DAL.Data;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace AhmadShop.DAL.Repositires
 {
-    public class GenericRepository<T> : IGenericRepositry<T> where T : class
+    public class GenericRepository<T> : IGenericRepositry<T>
+        where T : class
     {
         private readonly ApplicationDbContext _context;
 
-        public GenericRepository (ApplicationDbContext context)
+        public GenericRepository(ApplicationDbContext context)
         {
             _context = context;
         }
 
-        public void Create(T entity)
+        public async Task CreateAsync(
+            T entity,
+            CancellationToken cancellationToken = default)
         {
-            try
-            {
-                _context.Set<T>().Add(entity);
-                _context.SaveChanges();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.InnerException?.Message);
-                throw;
-            }
+            await _context.Set<T>().AddAsync(entity, cancellationToken);
+            await _context.SaveChangesAsync(cancellationToken);
         }
 
-        public void Update(T entity)
+        public async Task UpdateAsync(
+            T entity,
+            CancellationToken cancellationToken = default)
         {
             _context.Set<T>().Update(entity);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync(cancellationToken);
         }
 
-        public void Remove(T entity)
+        public async Task RemoveAsync(
+            T entity,
+            CancellationToken cancellationToken = default)
         {
             _context.Set<T>().Remove(entity);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync(cancellationToken);
         }
 
-        public List<T> Get()
+        public async Task<List<T>> GetAsync(
+            CancellationToken cancellationToken = default)
         {
-            var entities = _context.Set<T>().ToList();
-            return entities;
+            return await _context.Set<T>()
+                .ToListAsync(cancellationToken);
         }
 
-        public T Find(int id)
+        public async Task<T?> FindAsync(
+            int id,
+            CancellationToken cancellationToken = default)
         {
-            return _context.Set<T>().Find(id);
+            return await _context.Set<T>()
+                .FindAsync(new object[] { id }, cancellationToken);
         }
     }
 }

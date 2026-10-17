@@ -1,4 +1,5 @@
 
+using AhmadShop.BLL;
 using AhmadShop.DAL.Data;
 using AhmadShop.DAL.Model;
 using AhmadShop.DAL.Repositires;
@@ -19,8 +20,9 @@ namespace AhmadShop.PL
             builder.Services.AddOpenApi();
 
             builder.Services.AddScoped<IGenericRepositry<Category>, GenericRepository<Category>>();
-            builder.Services.AddDbContext<ApplicationDbContext>(options =>options.UseSqlServer("Data Source=.;Database=AhmadShop;Integrated Security=True;TrustServerCertificate=True;"));
-
+            builder.Services.AddScoped<IGenericRepositry<Brand>, GenericRepository<Brand>>();
+            builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("DeafultConnection")));
+            builder.Services.AddScoped<ICategoryService, CategoryService>();
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
