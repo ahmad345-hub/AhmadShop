@@ -1,7 +1,6 @@
-﻿using AhmadShop.DAL.Data;
+﻿
 using AhmadShop.DAL.Model;
 using AhmadShop.DAL.Repositires;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AhmadShop.PL.Controllers
@@ -10,34 +9,48 @@ namespace AhmadShop.PL.Controllers
     [ApiController]
     public class BrandController : ControllerBase
     {
-        private readonly IGenericRepositry<Brand> _repositry;
-        public BrandController(IGenericRepositry<Brand> repositry)
+        private readonly IGenericRepositry<Brand> _repository;
+
+        public BrandController(IGenericRepositry<Brand> repository)
         {
-            _repositry = repositry;
+            _repository = repository;
         }
 
-        [HttpGet("")]
-        public IActionResult Index()
+        [HttpGet]
+        public async Task<IActionResult> GetAll(
+            CancellationToken cancellationToken)
         {
-            var Brands = _repositry.Get();
-            return Ok(Brands);
+            var brands = await _repository.GetAsync(
+                cancellationToken: cancellationToken);
+
+            return Ok(brands);
         }
 
-
-        [HttpGet("{id}")]
-        public IActionResult GetBYId(int id)
+        [HttpGet("{id:int}")]
+        public async Task<IActionResult> GetById(
+            int id,
+            CancellationToken cancellationToken)
         {
-            var Brand = _repositry.Find(id);
-            return Ok(Brand);
+            var brand = await _repository.FindAsync(
+                id,
+                cancellationToken);
+
+            if (brand is null)
+                return NotFound();
+
+            return Ok(brand);
         }
 
-
-        [HttpPost("")]
-        public IActionResult Create(Brand Brand)
+        [HttpPost]
+        public async Task<IActionResult> Create(
+            Brand brand,
+            CancellationToken cancellationToken)
         {
-            _repositry.Create(Brand);
+            await _repository.CreateAsync(
+                brand,
+                cancellationToken);
 
-            return Ok();
+            return Ok(brand);
         }
     }
 }

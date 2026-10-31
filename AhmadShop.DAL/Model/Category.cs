@@ -1,14 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using AhmadShop.DAL.Model;
 
-namespace AhmadShop.DAL.Model
+public class Category
 {
-    public class Category
-    {
-        public int Id { get; set; }
-        public string Name { get; set; }
-        public bool Status { get; set; }
+    public int Id { get; set; }
 
-    }
+    public string Name { get; set; } = string.Empty;
+
+    public bool Status { get; set; }
+
+    public List<CategoryTranslation> Translations { get; set; } = new();
 }

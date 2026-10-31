@@ -1,6 +1,7 @@
 ﻿
 using AhmadShop.DAL.Data;
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 
 namespace AhmadShop.DAL.Repositires
 {
@@ -38,12 +39,62 @@ namespace AhmadShop.DAL.Repositires
             await _context.SaveChangesAsync(cancellationToken);
         }
 
+
+
         public async Task<List<T>> GetAsync(
+            Expression<Func<T, bool>>? filter = null,
+            List<Expression<Func<T, object>>>? includes = null,
+            bool tracked = false,
             CancellationToken cancellationToken = default)
         {
-            return await _context.Set<T>()
-                .ToListAsync(cancellationToken);
+            IQueryable<T> query = _context.Set<T>();
+
+            if (!tracked)
+                query = query.AsNoTracking();
+
+            if (filter is not null)
+                query = query.Where(filter);
+
+            if (includes is not null)
+            {
+                foreach (var include in includes)
+                {
+                    query = query.Include(include);
+                }
+            }
+
+            return await query.ToListAsync(cancellationToken);
         }
+
+
+
+
+        public async Task<T?> GetOneAsync(
+            Expression<Func<T, bool>>? filter = null,
+            List<Expression<Func<T, object>>>? includes = null,
+            bool tracked = false,
+            CancellationToken cancellationToken = default)
+        {
+            IQueryable<T> query = _context.Set<T>();
+
+            if (!tracked)
+                query = query.AsNoTracking();
+
+            if (filter is not null)
+                query = query.Where(filter);
+
+            if (includes is not null)
+            {
+                foreach (var include in includes)
+                {
+                    query = query.Include(include);
+                }
+            }
+
+            return await query.FirstOrDefaultAsync(cancellationToken);
+        }
+
+
 
         public async Task<T?> FindAsync(
             int id,
