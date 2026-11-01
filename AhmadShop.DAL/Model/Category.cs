@@ -9,4 +9,6 @@ public class Category
     public bool Status { get; set; }
 
     public List<CategoryTranslation> Translations { get; set; } = new();
+
+    public List<Product> Products { get; set; } = new();
 }

@@ -1,3 +1,4 @@
+
 using AhmadShop.BLL;
 using AhmadShop.BLL.Settings;
 using AhmadShop.DAL.Data;
@@ -44,8 +45,13 @@ namespace AhmadShop.PL
             builder.Services.AddScoped<IGenericRepositry<Brand>,
                 GenericRepository<Brand>>();
 
+            builder.Services.AddScoped<IGenericRepositry<Product>,
+                GenericRepository<Product>>();
+
             // Services
             builder.Services.AddScoped<ICategoryService, CategoryService>();
+            builder.Services.AddScoped<IProductService, ProductService>();
+            builder.Services.AddScoped<IFileService, FileService>();
 
             // Mapster
             MapsterConfig.RegisterMappings();
@@ -61,6 +67,9 @@ namespace AhmadShop.PL
             }
 
             app.UseHttpsRedirection();
+
+            // Serve uploaded images from wwwroot
+            app.UseStaticFiles();
 
             app.UseAuthorization();
 

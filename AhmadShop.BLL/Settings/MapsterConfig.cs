@@ -1,4 +1,5 @@
 ﻿
+using AhmadShop.DAL.DTO.Requests;
 using AhmadShop.DAL.DTO.Response;
 using AhmadShop.DAL.Model;
 using Mapster;
@@ -18,6 +19,20 @@ namespace AhmadShop.BLL.Settings
                         .Select(t => t.Name)
                         .FirstOrDefault() ?? src.Name
                 );
+
+            TypeAdapterConfig<ProductRequest, Product>.NewConfig()
+                .Ignore(dest => dest.Id)
+                .Ignore(dest => dest.MainImag)
+                .Map(dest => dest.Translations, src => src.Translations);
+
+            TypeAdapterConfig<ProductTranslationRequest, ProductTranslation>.NewConfig()
+                .Ignore(dest => dest.Id)
+                .Ignore(dest => dest.ProductId)
+                .Ignore(dest => dest.Product);
+
+            TypeAdapterConfig<Product, ProductResponse>.NewConfig();
+
+            TypeAdapterConfig<ProductTranslation, ProductTranslationResponse>.NewConfig();
         }
     }
 }
