@@ -4,6 +4,8 @@ using AhmadShop.BLL.Settings;
 using AhmadShop.DAL.Data;
 using AhmadShop.DAL.Model;
 using AhmadShop.DAL.Repositires;
+using AhmadShop.PL.Utils;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.EntityFrameworkCore;
 
@@ -11,7 +13,7 @@ namespace AhmadShop.PL
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
 
@@ -52,11 +54,45 @@ namespace AhmadShop.PL
             builder.Services.AddScoped<ICategoryService, CategoryService>();
             builder.Services.AddScoped<IProductService, ProductService>();
             builder.Services.AddScoped<IFileService, FileService>();
+            builder.Services.AddScoped<IAuthService, AuthService>();
+
+            // Identity
+            builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
+            {
+                options.Password.RequireDigit = true;
+                options.Password.RequireLowercase = true;
+                options.Password.RequireUppercase = true;
+                options.Password.RequireNonAlphanumeric = true;
+                options.Password.RequiredLength = 8;
+                options.Password.RequiredUniqueChars = 1;
+
+                options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
+                options.Lockout.MaxFailedAccessAttempts = 5;
+                options.Lockout.AllowedForNewUsers = true;
+
+                options.User.RequireUniqueEmail = true;
+            })
+            .AddEntityFrameworkStores<ApplicationDbContext>()
+            .AddDefaultTokenProviders();
+
+            // Seed Data
+            builder.Services.AddScoped<ISeedData, RoleSeedData>();
 
             // Mapster
             MapsterConfig.RegisterMappings();
 
             var app = builder.Build();
+
+            // Run Seed Data
+            using (var scope = app.Services.CreateScope())
+            {
+                var seeders = scope.ServiceProvider.GetServices<ISeedData>();
+
+                foreach (var seeder in seeders)
+                {
+                    await seeder.DataSeed();
+                }
+            }
 
             // Configure HTTP pipeline
             app.UseRequestLocalization();
@@ -71,11 +107,12 @@ namespace AhmadShop.PL
             // Serve uploaded images from wwwroot
             app.UseStaticFiles();
 
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.MapControllers();
 
-            app.Run();
+            await app.RunAsync();
         }
     }
 }
