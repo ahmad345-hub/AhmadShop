@@ -1,4 +1,7 @@
-﻿using AhmadShop.BLL.Settings;
+﻿
+using AhmadShop.BLL;
+using AhmadShop.BLL.Settings;
+using AhmadShop.DAL.DTO.Requests;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AhmadShop.PL.Controllers
@@ -20,6 +23,24 @@ namespace AhmadShop.PL.Controllers
             try
             {
                 var result = await _authService.RegisterAsync(request);
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new
+                {
+                    Message = ex.Message
+                });
+            }
+        }
+
+        [HttpPost("Login")]
+        public async Task<IActionResult> Login(LoginRequest request)
+        {
+            try
+            {
+                var result = await _authService.LoginAsync(request);
 
                 return Ok(result);
             }

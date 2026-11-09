@@ -8,6 +8,9 @@ using AhmadShop.PL.Utils;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 namespace AhmadShop.PL
 {
@@ -54,6 +57,11 @@ namespace AhmadShop.PL
             builder.Services.AddScoped<ICategoryService, CategoryService>();
             builder.Services.AddScoped<IProductService, ProductService>();
             builder.Services.AddScoped<IFileService, FileService>();
+
+            // Token Service
+            builder.Services.AddScoped<ITokenService, TokenService>();
+
+            // Auth Service
             builder.Services.AddScoped<IAuthService, AuthService>();
 
             // Identity
@@ -71,9 +79,79 @@ namespace AhmadShop.PL
                 options.Lockout.AllowedForNewUsers = true;
 
                 options.User.RequireUniqueEmail = true;
+                options.SignIn.RequireConfirmedEmail = true;
             })
             .AddEntityFrameworkStores<ApplicationDbContext>()
             .AddDefaultTokenProviders();
+
+            // JWT Authentication
+            var jwtSettings = builder.Configuration.GetSection("Jwt");
+            var secretKey = jwtSettings["SecretKey"];
+
+            // Check JWT configuration (without printing the secret)
+            Console.WriteLine(
+                $"JWT Secret exists: {!string.IsNullOrEmpty(secretKey)}");
+
+            Console.WriteLine($"JWT Issuer: {jwtSettings["Issuer"]}");
+            Console.WriteLine($"JWT Audience: {jwtSettings["Audience"]}");
+            Console.WriteLine($"JWT Duration: {jwtSettings["DurationInMinutes"]}");
+
+            if (string.IsNullOrEmpty(secretKey))
+            {
+                throw new Exception("JWT SecretKey is missing from configuration.");
+            }
+
+            builder.Services.AddAuthentication(options =>
+            {
+                options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+
+                options.DefaultAuthenticateScheme =
+                    JwtBearerDefaults.AuthenticationScheme;
+
+                options.DefaultChallengeScheme =
+                    JwtBearerDefaults.AuthenticationScheme;
+            })
+            .AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+
+                    ValidIssuer = jwtSettings["Issuer"],
+                    ValidAudience = jwtSettings["Audience"],
+
+                    IssuerSigningKey = new SymmetricSecurityKey(
+                        Encoding.UTF8.GetBytes(secretKey)),
+
+                    ClockSkew = TimeSpan.Zero
+                };
+
+                // JWT Error Diagnostics
+                options.Events = new JwtBearerEvents
+                {
+                    OnAuthenticationFailed = context =>
+                    {
+                        Console.WriteLine(
+                            $"JWT Error: {context.Exception.Message}");
+
+                        return Task.CompletedTask;
+                    },
+
+                    OnChallenge = context =>
+                    {
+                        Console.WriteLine(
+                            $"JWT Challenge: {context.Error} - {context.ErrorDescription}");
+
+                        return Task.CompletedTask;
+                    }
+                };
+            });
+
+            // Authorization
+            builder.Services.AddAuthorization();
 
             // Seed Data
             builder.Services.AddScoped<ISeedData, RoleSeedData>();

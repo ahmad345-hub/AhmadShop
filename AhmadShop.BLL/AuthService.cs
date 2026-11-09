@@ -1,17 +1,26 @@
 ﻿
+using AhmadShop.BLL.Settings;
 using AhmadShop.DAL.DTO.Response;
+using AhmadShop.DAL.DTO.Requests;
 using AhmadShop.DAL.Model;
 using Microsoft.AspNetCore.Identity;
 
-namespace AhmadShop.BLL.Settings
+namespace AhmadShop.BLL
 {
     public class AuthService : IAuthService
     {
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly SignInManager<ApplicationUser> _signInManager;
+        private readonly ITokenService _tokenService;
 
-        public AuthService(UserManager<ApplicationUser> userManager)
+        public AuthService(
+            UserManager<ApplicationUser> userManager,
+            SignInManager<ApplicationUser> signInManager,
+            ITokenService tokenService)
         {
             _userManager = userManager;
+            _signInManager = signInManager;
+            _tokenService = tokenService;
         }
 
         public async Task<RegisterResponse> RegisterAsync(RegisterRequest request)
@@ -68,6 +77,47 @@ namespace AhmadShop.BLL.Settings
                 Email = user.Email,
                 UserName = user.UserName,
                 PhoneNumber = user.PhoneNumber
+            };
+        }
+
+        public async Task<LoginResponse> LoginAsync(LoginRequest request)
+        {
+            var user = await _userManager.FindByEmailAsync(request.Email);
+
+            if (user == null)
+            {
+                throw new Exception("Invalid email or password.");
+            }
+
+            var result = await _signInManager.CheckPasswordSignInAsync(
+                user,
+                request.Password,
+                lockoutOnFailure: true);
+
+            if (result.IsLockedOut)
+            {
+                throw new Exception("Your account is locked. Please try again later.");
+            }
+
+            if (result.IsNotAllowed)
+            {
+                throw new Exception("Email is not confirmed.");
+            }
+
+            if (!result.Succeeded)
+            {
+                throw new Exception("Invalid email or password.");
+            }
+
+            var token = await _tokenService.GenerateToken(user);
+
+            return new LoginResponse
+            {
+                Id = user.Id,
+                FullName = user.FullName,
+                Email = user.Email!,
+                UserName = user.UserName!,
+                Token = token
             };
         }
     }
