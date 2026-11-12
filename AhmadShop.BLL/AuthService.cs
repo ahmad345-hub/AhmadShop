@@ -1,9 +1,10 @@
-﻿
-using AhmadShop.BLL.Settings;
+﻿using AhmadShop.BLL.Settings;
 using AhmadShop.DAL.DTO.Response;
 using AhmadShop.DAL.DTO.Requests;
 using AhmadShop.DAL.Model;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Configuration;
+using System.Net;
 
 namespace AhmadShop.BLL
 {
@@ -12,15 +13,21 @@ namespace AhmadShop.BLL
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly ITokenService _tokenService;
+        private readonly IEmailService _emailService;
+        private readonly IConfiguration _configuration;
 
         public AuthService(
             UserManager<ApplicationUser> userManager,
             SignInManager<ApplicationUser> signInManager,
-            ITokenService tokenService)
+            ITokenService tokenService,
+            IEmailService emailService,
+            IConfiguration configuration)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _tokenService = tokenService;
+            _emailService = emailService;
+            _configuration = configuration;
         }
 
         public async Task<RegisterResponse> RegisterAsync(RegisterRequest request)
@@ -70,6 +77,27 @@ namespace AhmadShop.BLL
                     roleResult.Errors.Select(e => e.Description)));
             }
 
+            // Generate Email Confirmation Token
+            var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+
+            // Create Confirmation Link
+            var appUrl = _configuration["AppUrl"];
+
+            var confirmationLink =
+                $"{appUrl}/api/Auth/ConfirmEmail?userId={user.Id}&token={WebUtility.UrlEncode(token)}";
+
+            // Send Confirmation Email
+            var emailBody = $@"
+                <h2>Welcome to AhmadShop!</h2>
+                <p>Please confirm your email address by clicking the link below:</p>
+                <a href='{confirmationLink}'>Confirm Email</a>
+            ";
+
+            await _emailService.SendEmailAsync(
+                user.Email!,
+                "Confirm Your Email - AhmadShop",
+                emailBody);
+
             return new RegisterResponse
             {
                 Id = user.Id,
@@ -78,6 +106,20 @@ namespace AhmadShop.BLL
                 UserName = user.UserName,
                 PhoneNumber = user.PhoneNumber
             };
+        }
+
+        public async Task<bool> ConfirmEmailAsync(string userId, string token)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+
+            if (user == null)
+            {
+                return false;
+            }
+
+            var result = await _userManager.ConfirmEmailAsync(user, token);
+
+            return result.Succeeded;
         }
 
         public async Task<LoginResponse> LoginAsync(LoginRequest request)

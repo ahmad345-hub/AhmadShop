@@ -28,11 +28,15 @@ namespace AhmadShop.BLL
 
             var userClaims = new List<Claim>()
             {
-                new Claim("Id", user.Id),
-                new Claim("UserName", user.UserName!),
-                new Claim("Email", user.Email!),
-                new Claim("Role", string.Join(",", roles))
+                new Claim(ClaimTypes.NameIdentifier, user.Id),
+                new Claim(ClaimTypes.Name, user.UserName!),
+                new Claim(ClaimTypes.Email, user.Email!)
             };
+
+            foreach (var role in roles)
+            {
+                userClaims.Add(new Claim(ClaimTypes.Role, role));
+            }
 
             var securityKey = new SymmetricSecurityKey(
                 Encoding.UTF8.GetBytes(

@@ -52,5 +52,36 @@ namespace AhmadShop.PL.Controllers
                 });
             }
         }
+
+
+
+        [HttpGet("ConfirmEmail")]
+        public async Task<IActionResult> ConfirmEmail(string userId, string token)
+        {
+            try
+            {
+                var result = await _authService.ConfirmEmailAsync(userId, token);
+
+                if (!result)
+                {
+                    return BadRequest(new
+                    {
+                        Message = "Email confirmation failed. Invalid user or token."
+                    });
+                }
+
+                return Ok(new
+                {
+                    Message = "Email confirmed successfully. You can now login."
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new
+                {
+                    Message = ex.Message
+                });
+            }
+        }
     }
 }

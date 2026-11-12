@@ -1,6 +1,6 @@
 ﻿using AhmadShop.DAL.Model;
 
-public class Category
+public class Category : AuditableEntity
 {
     public int Id { get; set; }
 

@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace AhmadShop.DAL.Model
+﻿namespace AhmadShop.DAL.Model
 {
-    public class Product
+    public class Product : AuditableEntity
     {
         public int Id { get; set; }
         public decimal Price { get; set; }

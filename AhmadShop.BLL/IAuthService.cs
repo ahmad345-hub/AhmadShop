@@ -9,5 +9,6 @@ namespace AhmadShop.BLL
         Task<RegisterResponse> RegisterAsync(RegisterRequest request);
 
         Task<LoginResponse> LoginAsync(LoginRequest request);
+        Task<bool> ConfirmEmailAsync(string userId, string token);
     }
 }

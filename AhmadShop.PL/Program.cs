@@ -57,7 +57,8 @@ namespace AhmadShop.PL
             builder.Services.AddScoped<ICategoryService, CategoryService>();
             builder.Services.AddScoped<IProductService, ProductService>();
             builder.Services.AddScoped<IFileService, FileService>();
-
+            builder.Services.AddScoped<IEmailService, EmailService>();
+            builder.Services.AddHttpContextAccessor();
             // Token Service
             builder.Services.AddScoped<ITokenService, TokenService>();
 

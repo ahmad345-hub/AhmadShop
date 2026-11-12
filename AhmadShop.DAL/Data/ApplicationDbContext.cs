@@ -1,16 +1,23 @@
-﻿using AhmadShop.DAL.Model;
+﻿
+using AhmadShop.DAL.Model;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Http;
+using System.Security.Claims;
 
 namespace AhmadShop.DAL.Data
 {
     public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {
+        private readonly IHttpContextAccessor _httpContextAccessor;
+
         public ApplicationDbContext(
-            DbContextOptions<ApplicationDbContext> options)
+            DbContextOptions<ApplicationDbContext> options,
+            IHttpContextAccessor httpContextAccessor)
             : base(options)
         {
+            _httpContextAccessor = httpContextAccessor;
         }
 
         public DbSet<Category> Categories { get; set; }
@@ -59,6 +66,35 @@ namespace AhmadShop.DAL.Data
                 entity.Property(t => t.Language)
                     .HasMaxLength(5);
             });
+        }
+
+        public override Task<int> SaveChangesAsync(
+            CancellationToken cancellationToken = default)
+        {
+            var userId = _httpContextAccessor.HttpContext?
+                .User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            var entries = ChangeTracker
+                .Entries<AuditableEntity>();
+
+            foreach (var entry in entries)
+            {
+                if (entry.State == EntityState.Added)
+                {
+                    entry.Entity.CreatedAt = DateTime.UtcNow;
+                    entry.Entity.CreatedById = userId;
+                }
+                else if (entry.State == EntityState.Modified)
+                {
+                    entry.Entity.UpdatedAt = DateTime.UtcNow;
+                    entry.Entity.UpdatedById = userId;
+
+                    entry.Property(x => x.CreatedAt).IsModified = false;
+                    entry.Property(x => x.CreatedById).IsModified = false;
+                }
+            }
+
+            return base.SaveChangesAsync(cancellationToken);
         }
     }
 }
